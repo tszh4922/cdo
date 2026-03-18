@@ -30,6 +30,9 @@ export async function onRequest(context) {
 
     response = await fetch(
       "https://cloudflare-dns.com/dns-query",
+      "https://dns.google/dns-query”,
+      "https://dns.quad9.net/dns-query",
+
       {
         method: "POST",
         headers: {

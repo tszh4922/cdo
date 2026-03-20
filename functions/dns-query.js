@@ -19,6 +19,8 @@ export async function onRequest(context) {
 
     response = await fetch(
       "https://cloudflare-dns.com/dns-query?dns=" + query,
+      "https://dns.google/dns-query?dns=” + query,
+      "https://dns.quad9.net/dns-query?dns=" + query,
       {
         headers: {
           "accept": "application/dns-message"

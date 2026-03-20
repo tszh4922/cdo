@@ -1,49 +1,51 @@
+import { CONFIG } from "../config.js"
+
 export async function onRequest(context) {
 
   const request = context.request
   const url = new URL(request.url)
 
-  if (url.pathname !== "/dns-query") {
-    return new Response("DoH DNS Server Running")
+  if (url.pathname !== "/api/dns") {
+    return new Response("Pro DNS Running")
   }
+
+  const upstreams = [
+    "https://cloudflare-dns.com/dns-query",
+    "https://dns.google/dns-query",
+    "https://1.0.0.1/dns-query"
+  ]
+
+  // 打乱顺序（负载均衡）
+  const shuffled = upstreams.sort(() => 0.5 - Math.random())
 
   let response
 
-  if (request.method === "GET") {
+  for (let target of shuffled) {
+    try {
 
-    const query = url.searchParams.get("dns")
+      if (request.method === "GET") {
 
-    if (!query) {
-      return new Response("Bad Request", { status: 400 })
+        const dns = url.searchParams.get("dns")
+
+        response = await fetch(target + "?dns=" + dns, {
+          headers: { "accept": "application/dns-message" },
+          cf: { cacheTtl: 60 }
+        })
+
+      } else {
+
+        response = await fetch(target, {
+          method: "POST",
+          headers: { "content-type": "application/dns-message" },
+          body: request.body
+        })
+      }
+
+      if (response.ok) break
+
+    } catch (e) {
+      continue
     }
-
-    response = await fetch(
-      "https://cloudflare-dns.com/dns-query?dns=" + query,
-      "https://dns.google/dns-query?dns=” + query,
-      "https://dns.quad9.net/dns-query?dns=" + query,
-      {
-        headers: {
-          "accept": "application/dns-message"
-        }
-      }
-    )
-
-  } else if (request.method === "POST") {
-
-    response = await fetch(
-      "https://cloudflare-dns.com/dns-query",
-      "https://dns.google/dns-query”,
-      "https://dns.quad9.net/dns-query",
-
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/dns-message"
-        },
-        body: request.body
-      }
-    )
-
   }
 
   return new Response(await response.arrayBuffer(), {

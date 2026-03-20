@@ -1,56 +1,75 @@
-import { CONFIG } from "../config.js"
-
 export async function onRequest(context) {
 
   const request = context.request
   const url = new URL(request.url)
 
-  if (url.pathname !== "/api/dns") {
-    return new Response("Pro DNS Running")
+  // 入口检测
+  if (url.pathname !== "/dns-query") {
+    return new Response("DoH Server Running")
   }
 
+  // 上游DNS池（稳定版）
   const upstreams = [
     "https://cloudflare-dns.com/dns-query",
     "https://dns.google/dns-query",
     "https://1.0.0.1/dns-query"
   ]
 
-  // 打乱顺序（负载均衡）
-  const shuffled = upstreams.sort(() => 0.5 - Math.random())
+  // 随机选一个（负载均衡）
+  function getUpstream() {
+    return upstreams[Math.floor(Math.random() * upstreams.length)]
+  }
 
   let response
 
-  for (let target of shuffled) {
-    try {
+  try {
 
-      if (request.method === "GET") {
+    // GET 请求（浏览器/部分客户端）
+    if (request.method === "GET") {
 
-        const dns = url.searchParams.get("dns")
+      const dns = url.searchParams.get("dns")
 
-        response = await fetch(target + "?dns=" + dns, {
-          headers: { "accept": "application/dns-message" },
-          cf: { cacheTtl: 60 }
-        })
-
-      } else {
-
-        response = await fetch(target, {
-          method: "POST",
-          headers: { "content-type": "application/dns-message" },
-          body: request.body
-        })
+      if (!dns) {
+        return new Response("Bad Request", { status: 400 })
       }
 
-      if (response.ok) break
+      response = await fetch(getUpstream() + "?dns=" + dns, {
+        headers: {
+          "accept": "application/dns-message"
+        },
+        cf: {
+          cacheTtl: 120
+        }
+      })
 
-    } catch (e) {
-      continue
     }
+
+    // POST 请求（标准DoH）
+    else if (request.method === "POST") {
+
+      response = await fetch(getUpstream(), {
+        method: "POST",
+        headers: {
+          "content-type": "application/dns-message"
+        },
+        body: request.body
+      })
+    }
+
+  } catch (e) {
+
+    // fallback（兜底）
+    response = await fetch("https://cloudflare-dns.com/dns-query", {
+      method: request.method,
+      headers: request.headers,
+      body: request.body
+    })
   }
 
   return new Response(await response.arrayBuffer(), {
     headers: {
-      "content-type": "application/dns-message"
+      "content-type": "application/dns-message",
+      "cache-control": "max-age=120"
     }
   })
 }

@@ -1,6 +1,6 @@
 export let CONFIG = {
 
-  password: "admin123", // 后台密码（一定要改）
+  password: "587412@tll", // 后台密码（一定要改）
 
   upstreams: {
     global: [

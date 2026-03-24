@@ -3,7 +3,7 @@ export async function onRequest(context) {
   const request = context.request;
   const url = new URL(request.url);
 
-  if (url.pathname !== "/dns-query") {
+  if (url.pathname !== "/xiaoliu") {
     return new Response("DoH OK");
   }
 

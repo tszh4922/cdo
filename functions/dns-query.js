@@ -124,7 +124,7 @@ export async function onRequest(context) {
   }
 }
 
-fetch("https://dns.xxx.com/dns-query", {
+fetch("https://th.tszh.dpdns.org/dns-query", {
   cf: {
     resolveOverride: "visa.com"
   }

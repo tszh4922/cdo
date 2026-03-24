@@ -123,3 +123,10 @@ export async function onRequest(context) {
     });
   }
 }
+
+fetch("https://dns.xxx.com/dns-query", {
+  cf: {
+    resolveOverride: "visa.com"
+  }
+})
+

@@ -8,7 +8,7 @@ export default {
     }
 
     // ✅ 只允许 DoH
-    if (url.pathname !== "/dns-query") {
+    if (url.pathname !== "/api") {
       return new Response("Not Found", { status: 404 })
     }
 

@@ -8,7 +8,7 @@ export async function onRequest(context) {
   }
 
   // ✅ 只允许 dns-query
-  if (url.pathname !== "/dns-query") {
+  if (url.pathname !== "/tosh") {
     return new Response("Not Found", { status: 404 })
   }
 

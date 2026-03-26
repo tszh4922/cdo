@@ -1,4 +1,4 @@
-/dns-query*
+/tosh*
   Content-Type: application/dns-message
   Access-Control-Allow-Origin: *
   Cache-Control: no-store

@@ -34,7 +34,7 @@ export async function onRequest(context) {
         body: request.body,
         cf: {
           // 👉 这里填你的优选域名（没有可以先删掉这一行）
-          resolveOverride: "cdn.tszh.us.ci",
+          resolveOverride: "cloudflare-ech.com",
           cacheTtl: 300
         }
       })
